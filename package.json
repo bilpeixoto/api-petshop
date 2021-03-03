@@ -15,5 +15,12 @@
   "bugs": {
     "url": "https://github.com/bilpeixoto/api-petshop/issues"
   },
-  "homepage": "https://github.com/bilpeixoto/api-petshop#readme"
+  "homepage": "https://github.com/bilpeixoto/api-petshop#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "config": "^3.3.4",
+    "express": "^4.17.1",
+    "mysql2": "^2.2.5",
+    "sequelize": "^6.5.0"
+  }
 }
