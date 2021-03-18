@@ -65,6 +65,19 @@ class SerializardorFornecedor extends Serializador {
     }
 }
 
+class SerialiazadorProduto extends Serializador {
+    constructor(contentType, camposExtras) {
+        super()
+        this.contentType = contentType
+        this.camposPublicos = [
+            'id',
+            'titulo'
+        ].concat(camposExtras || [])
+        this.tagSingular = 'produto'
+        this.tagPlural = 'produtos'
+    }
+}
+
 class SerializadorErro extends Serializador {
     constructor (contentType, camposExtras) {
         super()
@@ -75,7 +88,6 @@ class SerializadorErro extends Serializador {
         ].concat(camposExtras || [])
         this.tagSingular = 'erro'
         this.tagPlural = 'erros'
-
     }
 }
 
@@ -83,5 +95,6 @@ module.exports = {
     Serializador: Serializador,
     SerializardorFornecedor: SerializardorFornecedor,
     SerializadorErro: SerializadorErro,
+    SerialiazadorProduto: SerialiazadorProduto,
     formatosAceitos: ['application/json', 'application/xml']
 }
