@@ -13,7 +13,7 @@ roteador.get('/', async (req, res) => {
     )
 })
 
-roteador.post('/', async (req, res) => {
+roteador.post('/', async (req, res, proximo) => {
     try{
         const idFornecedor = req.fornecedor.id
         const corpo = req.body
@@ -23,6 +23,10 @@ roteador.post('/', async (req, res) => {
         const serializador = new Serializador(
             res.getHeader('Content-Type')
         )
+        res.set('ETag', produto.versao)
+        const timestamp = (new Date(produto.dataAtualizacao)).getTime()
+        res.set('Last-Modified', timestamp)
+        res.set('Location', `/api/fornecedores/${produto.fornecedor}/produtos/${produto.id}`)
         res.status(201)
         res.send(serializador.serializar(produto))
     } catch(erro) {
@@ -30,7 +34,7 @@ roteador.post('/', async (req, res) => {
     }
 })
 
-roteador.delete('/:id', async (req, res) => {
+roteador.delete('/:id', async (req, res, proximo) => {
     try {
         dados = {
             id: req.params.id,
@@ -58,9 +62,31 @@ roteador.get('/:id', async (req, res, proximo) => {
             res.getHeader('Content-Type'),
             ['preco', 'estoque', 'dataCriacao', 'dataAtualizcao', 'versao']
         )
+        res.set('ETag', produto.versao)
+        const timestamp = (new Date(produto.dataAtualizacao)).getTime()
+        res.set('Last-Modified', timestamp)
         res.send(
             serializador.serializar(produto)
         )
+    } catch (erro) {
+        proximo(erro)
+    }
+})
+
+roteador.head('/:id', async (req, res, proximo) => {
+    try {
+        const dados = {
+            id: req.params.id,
+            fornecedor: req.fornecedor.id
+        }
+    
+        const produto = new Produto(dados)
+        await produto.carregar()
+        res.set('ETag', produto.versao)
+        const timestamp = (new Date(produto.dataAtualizacao)).getTime()
+        res.set('Last-Modified', timestamp)
+        res.status(200)
+        res.end()
     } catch (erro) {
         proximo(erro)
     }
@@ -78,6 +104,10 @@ roteador.put('/:id', async (req, res, proximo) => {
         )
         produto = new Produto(dados)
         await produto.atualizar()
+        await produto.carregar()
+        res.set('ETag', produto.versao)
+        const timestamp = (new Date(produto.dataAtualizacao)).getTime()
+        res.set('Last-Modified', timestamp)
         res.status(204)
         res.end()
     } catch (erro) {
@@ -91,9 +121,14 @@ roteador.post('/:id/diminuir-estoque', async (req, res, proximo) => {
             id: req.params.id,
             fornecedor: req.fornecedor.id
         })
+
         await produto.carregar()
         produto.estoque = produto.estoque - req.body.quantidade
         await produto.dimiuirEstoque()
+        await produto.carregar()
+        res.set('ETag', produto.versao)
+        const timestamp = (new Date(produto.dataAtualizacao)).getTime()
+        res.set('Last-Modified', timestamp)
         res.status(204)
         res.end()
     } catch (erro){
@@ -102,6 +137,7 @@ roteador.post('/:id/diminuir-estoque', async (req, res, proximo) => {
 })
 
 const roteadorReclamacoes = require('./reclamacoes')
+const { response } = require('express')
 roteador.use('/:idProduto/reclamacoes', roteadorReclamacoes)
 
 module.exports = roteador
