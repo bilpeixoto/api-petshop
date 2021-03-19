@@ -8,6 +8,7 @@ const DadosNaoFornecidos = require('./erros/DadosNaoFornecidos')
 const ValorNaoSuportado = require('./erros/ValorNaoSuportado')
 const formatosAceitos = require('./Serializador').formatosAceitos
 const SerializadorErro = require('./Serializador').SerializadorErro
+const ValorNaosuportado = require('./erros/ValorNaoSuportado')
 
 app.use(bodyParser.json())
 
@@ -24,9 +25,16 @@ app.use((req, res, proximo) => {
     proximo()
 })
 
+app.use((req, res, proximo) => {
+    res.set('Access-Control-Allow-Origin', '*')
+    proximo()
+})
+
 const roteador = require('./rotas/fornecedores')
-const ValorNaosuportado = require('./erros/ValorNaoSuportado')
 app.use('/api/fornecedores', roteador)
+
+const roteadorV2 = require('./rotas/fornecedores/rotas.vs')
+app.use('/api/v2/fornecedores', roteadorV2)
 
 app.use((erro, req, res, proximo) => {
     let status = 500
